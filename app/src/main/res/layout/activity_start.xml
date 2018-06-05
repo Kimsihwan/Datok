@@ -13,4 +13,22 @@
         android:layout_centerInParent="true"
         android:text="환영합니다. DaTok 입니다."
         android:textSize="24sp" />
+
+    <Button
+        android:id="@+id/start_reg_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="161dp"
+        android:text="@string/need_a_new_account" />
+
+    <android.support.design.widget.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="101dp">
+
+    </android.support.design.widget.TextInputLayout>
 </RelativeLayout>
