@@ -19,6 +19,10 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
+import java.util.HashMap;
 
 
 public class RegisterActivity extends AppCompatActivity {
@@ -31,6 +35,8 @@ public class RegisterActivity extends AppCompatActivity {
     private Button mCreateBtn;
 
     private Toolbar mToolbar;
+
+    private DatabaseReference mDatabase;
 
     //ProgressDialog
     private ProgressDialog mRegProgress;
@@ -76,27 +82,41 @@ public class RegisterActivity extends AppCompatActivity {
                     mRegProgress.show();
                     register_user(display_name, email, password);
                 }
-
-
-
             }
         });
-
-
     }
 
-    private void register_user(String display_name, String email, String password){
+    private void register_user(final String display_name, String email, String password){
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
-                            Log.d(TAG, "회원가입 성공");
-                            mRegProgress.dismiss();
-                            Intent mainIntent = new Intent(RegisterActivity.this, MainActivity.class);
-                            mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK); //기존에 쌓여있던 task(stack)을 없애고 task를 새로 생성한다.
-                            startActivity(mainIntent);
-                            finish();
+
+                            FirebaseUser current_user = FirebaseAuth.getInstance().getCurrentUser();
+                            String uid = current_user.getUid();
+
+                            mDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(uid);
+
+                            HashMap<String, String> userMap = new HashMap<>();
+                            userMap.put("name", display_name);
+                            userMap.put("status", "상태 변경하세요.");
+                            userMap.put("image", "default");
+                            userMap.put("thumb_image", "default");
+
+                            mDatabase.setValue(userMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+                                    if(task.isSuccessful()) {
+                                        Log.d(TAG, "회원가입 성공");
+                                        mRegProgress.dismiss();
+                                        Intent mainIntent = new Intent(RegisterActivity.this, MainActivity.class);
+                                        mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK); //기존에 쌓여있던 task(stack)을 없애고 task를 새로 생성한다.
+                                        startActivity(mainIntent);
+                                        finish();
+                                    }
+                                }
+                            });
                         } else {
                             Log.d(TAG, "회원가입 실패: ", task.getException());
                             mRegProgress.hide();

@@ -40,7 +40,7 @@ class SectionPagerAdpater extends FragmentPagerAdapter {
 
         switch (position) {
             case 0:
-                return "REQUEST";
+                return "요청";
             case 1:
                 return "채팅";
             case 2:
