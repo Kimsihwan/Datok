@@ -1,0 +1,59 @@
+{
+  "project_info": {
+    "project_number": "338257581101",
+    "firebase_url": "https://datok-832e5.firebaseio.com",
+    "project_id": "datok-832e5",
+    "storage_bucket": "datok-832e5.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:338257581101:android:1787f4705ba349ba",
+        "android_client_info": {
+          "package_name": "com.example.test.datok"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "338257581101-js0tllv7eeo8ild6bbavjk5qjo5q6qc9.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.test.datok",
+            "certificate_hash": "3a634a91e468e0ba790c0c1120f972fee95ec83b"
+          }
+        },
+        {
+          "client_id": "338257581101-24pch24fqb00nsoatao6k12qhr7vblfl.apps.googleusercontent.com",
+          "client_type": 3
+        },
+        {
+          "client_id": "338257581101-24pch24fqb00nsoatao6k12qhr7vblfl.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDecpiNz60D79Q5TKtnTOcs3qklTE9_zEA"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "338257581101-24pch24fqb00nsoatao6k12qhr7vblfl.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
