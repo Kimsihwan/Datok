@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".StartActivity">
+    tools:context=".StartActivity"
+    android:background="@color/colorPrimary">
 
     <TextView
         android:id="@+id/textView"
@@ -12,16 +13,10 @@
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
         android:text="환영합니다. DaTok 입니다."
+        android:textColor="@android:color/white"
         android:textSize="24sp" />
 
-    <Button
-        android:id="@+id/start_reg_btn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="161dp"
-        android:text="@string/need_a_new_account" />
+
 
     <android.support.design.widget.TextInputLayout
         android:layout_width="match_parent"
@@ -31,4 +26,27 @@
         android:layout_marginTop="101dp">
 
     </android.support.design.widget.TextInputLayout>
+
+    <Button
+        android:id="@+id/start_login_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="184dp"
+        android:background="@color/colorAccent"
+        android:text="로그인"
+        android:textAlignment="center"
+        android:textColor="@android:color/white" />
+    <Button
+        android:id="@+id/start_register_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="111dp"
+        android:text="회원가입"
+        android:background="@color/white"
+        android:textAlignment="center"
+        android:textColor="@color/colorPrimary"/>
 </RelativeLayout>
