@@ -82,6 +82,7 @@ public class LoginActivity extends AppCompatActivity {
                     Log.d(TAG, "로그인 성공");
                     mLoginProgress.dismiss();
                     Intent mainIntent = new Intent(LoginActivity.this, MainActivity.class);
+                    mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK); //기존에 쌓여있던 task(stack)을 없애고 task를 새로 생성한다.
                     startActivity(mainIntent);
                     finish();
                 } else {

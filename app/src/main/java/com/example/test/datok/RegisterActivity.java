@@ -94,6 +94,7 @@ public class RegisterActivity extends AppCompatActivity {
                             Log.d(TAG, "회원가입 성공");
                             mRegProgress.dismiss();
                             Intent mainIntent = new Intent(RegisterActivity.this, MainActivity.class);
+                            mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK); //기존에 쌓여있던 task(stack)을 없애고 task를 새로 생성한다.
                             startActivity(mainIntent);
                             finish();
                         } else {
