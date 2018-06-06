@@ -1,5 +1,7 @@
 package com.example.test.datok;
 
+import android.content.Context;
+import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -15,6 +17,9 @@ import android.widget.TextView;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.squareup.picasso.Picasso;
+
+import de.hdodenhof.circleimageview.CircleImageView;
 
 public class UsersActivity extends AppCompatActivity {
 
@@ -54,10 +59,24 @@ public class UsersActivity extends AppCompatActivity {
                 mUsersDatabase
         ) {
             @Override
-            protected void populateViewHolder(UsersViewHolder usersViewHolder, Users users, int i) {
+            protected void populateViewHolder(UsersViewHolder usersViewHolder, Users users, int position) {
 
                 usersViewHolder.setName(users.getName());
                 usersViewHolder.setUsersStatus(users.getStatus());
+                usersViewHolder.setUserImage(users.getThumb_image());
+
+                final String user_id = getRef(position).getKey();
+
+                usersViewHolder.mView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+
+                        Intent profileIntent = new Intent(UsersActivity.this, ProfileActivity.class);
+                        profileIntent.putExtra("user_id", user_id);
+                        startActivity(profileIntent);
+
+                    }
+                });
 
             }
         };
@@ -89,6 +108,16 @@ public class UsersActivity extends AppCompatActivity {
             userStatusView.setText(status);
 
         }
+
+        public void setUserImage(String thumb_image) {
+
+            CircleImageView userImageView = mView.findViewById(R.id.user_single_image);
+
+            Picasso.get().load(thumb_image).placeholder(R.drawable.ic_action_name).into(userImageView);
+
+        }
+
+
     }
 
 }
