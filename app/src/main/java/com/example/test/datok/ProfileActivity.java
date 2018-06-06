@@ -11,6 +11,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -63,7 +64,7 @@ public class ProfileActivity extends AppCompatActivity {
         mProgressDialog.show();
 
 
-        mCurrent_state = "친구없음";
+        mCurrent_state = "not_friends";
 
 
         mUserDatabase.addValueEventListener(new ValueEventListener() {
@@ -79,7 +80,35 @@ public class ProfileActivity extends AppCompatActivity {
 
                 Picasso.get().load(image).placeholder(R.drawable.ic_action_name).into(mProfileImage);
 
-                mProgressDialog.dismiss();
+                //----------------------친구 목록 / 요청 기능 ----------------------//
+
+                mFriendReqDatabase.child(mCurrent_user.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+
+                        if(dataSnapshot.hasChild(user_id)) {
+
+                            String req_type = dataSnapshot.child(user_id).child("request_type").getValue().toString();
+
+                            if(req_type.equals("received")) {
+
+                                mCurrent_state = "req_received";
+                                mProfileSendReqBtn.setText("친구요청 수락");
+                            } else if(req_type.equals("sent")) {
+                                mCurrent_state = "req_sent";
+                                mProfileSendReqBtn.setText("친구요청 취소");
+                            }
+                        }
+
+                        mProgressDialog.dismiss();
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+
             }
 
             @Override
@@ -91,7 +120,12 @@ public class ProfileActivity extends AppCompatActivity {
         mProfileSendReqBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(mCurrent_state.equals("친구없음")) {
+
+                mProfileSendReqBtn.setEnabled(false);
+
+                // ----------------친구 없는 상태 -----------------------//
+
+                if(mCurrent_state.equals("not_friends")) {
 
                     mFriendReqDatabase.child(mCurrent_user.getUid()).child(user_id).child("request_type").setValue("sent").addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
@@ -100,11 +134,15 @@ public class ProfileActivity extends AppCompatActivity {
                             if(task.isSuccessful()) {
 
                                 mFriendReqDatabase.child(user_id).child(mCurrent_user.getUid()).child("request_type")
-                                        .setValue("received").addOnCompleteListener(new OnCompleteListener<Void>() {
+                                        .setValue("received").addOnSuccessListener(new OnSuccessListener<Void>() {
                                     @Override
-                                    public void onComplete(@NonNull Task<Void> task) {
+                                    public void onSuccess(Void aVoid) {
 
-                                        Toast.makeText(ProfileActivity.this, "친구요청 성공", Toast.LENGTH_SHORT).show();
+                                        mProfileSendReqBtn.setEnabled(true);
+                                        mCurrent_state = "req_sent";
+                                        mProfileSendReqBtn.setText("친구요청 취소");
+
+                                        //Toast.makeText(ProfileActivity.this, "친구요청 성공", Toast.LENGTH_SHORT).show();
                                     }
                                 });
 
@@ -117,6 +155,28 @@ public class ProfileActivity extends AppCompatActivity {
 
                         }
                     });
+                }
+                // ----------------요청 취소 상태-----------------------//
+
+                if(mCurrent_state.equals("req_sent")) {
+
+                    mFriendReqDatabase.child(mCurrent_user.getUid()).child(user_id).removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+
+                            mFriendReqDatabase.child(user_id).child(mCurrent_user.getUid()).removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void aVoid) {
+                                    mProfileSendReqBtn.setEnabled(true);
+                                    mCurrent_state = "not_friends";
+                                    mProfileSendReqBtn.setText("친구요청 보내기");
+
+                                }
+                            });
+
+                        }
+                    });
+
                 }
             }
         });
