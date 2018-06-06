@@ -34,6 +34,10 @@ dependencies {
     //파이어베이스 API
     implementation 'com.google.firebase:firebase-auth:11.8.0'
     implementation 'com.google.firebase:firebase-database:11.8.0'
+    implementation 'com.google.firebase:firebase-storage:11.8.0'
+
+    //사진 편집 API
+    implementation 'com.theartofdev.edmodo:android-image-cropper:2.7.+'
 }
 
 apply plugin: 'com.google.gms.google-services'
