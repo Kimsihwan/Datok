@@ -25,6 +25,8 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.squareup.picasso.Callback;
+import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.PicassoProvider;
 import com.theartofdev.edmodo.cropper.CropImage;
@@ -80,13 +82,16 @@ public class SettingsActivity extends AppCompatActivity {
 
         String current_uid = mCurrentUser.getUid();
 
+
+
         mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(current_uid);
+        mUserDatabase.keepSynced(true);
 
         mUserDatabase.addValueEventListener(new ValueEventListener() { // sql 업데이트와 비슷함
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) { // dataSnapshot 값은 파이어베이스에 있는 사용자UID값
                 String name = dataSnapshot.child("name").getValue().toString();
-                String image = dataSnapshot.child("image").getValue().toString();
+                final String image = dataSnapshot.child("image").getValue().toString();
                 String status = dataSnapshot.child("status").getValue().toString();
                 String  tumb_image = dataSnapshot.child("thumb_image").getValue().toString();
 
@@ -94,7 +99,19 @@ public class SettingsActivity extends AppCompatActivity {
                 mStatus.setText(status);
 
                 if(!image.equals("default")) {
-                    Picasso.get().load(image).placeholder(R.drawable.ic_action_name).into(mDisplayImage);
+                    //Picasso.get().load(image).placeholder(R.drawable.ic_action_name).into(mDisplayImage);
+                    Picasso.get().load(image).networkPolicy(NetworkPolicy.OFFLINE)
+                            .placeholder(R.drawable.ic_action_name).into(mDisplayImage, new Callback() {
+                        @Override
+                        public void onSuccess() {
+
+                        }
+
+                        @Override
+                        public void onError(Exception e) {
+                            Picasso.get().load(image).placeholder(R.drawable.ic_action_name).into(mDisplayImage);
+                        }
+                    });
                 }
             }
 

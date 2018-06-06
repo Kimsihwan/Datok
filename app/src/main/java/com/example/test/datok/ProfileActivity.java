@@ -103,9 +103,31 @@ public class ProfileActivity extends AppCompatActivity {
                                 mCurrent_state = "req_sent";
                                 mProfileSendReqBtn.setText("친구요청 취소");
                             }
+                            mProgressDialog.dismiss();
+                        } else {
+
+                            mFriendDatabase.child(mCurrent_user.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(DataSnapshot dataSnapshot) {
+
+                                    if(dataSnapshot.hasChild(user_id)) {
+
+                                        mCurrent_state = "friends";
+                                        mProfileSendReqBtn.setText("친구삭제");
+                                    }
+
+                                    mProgressDialog.dismiss();
+                                }
+
+                                @Override
+                                public void onCancelled(DatabaseError databaseError) {
+                                    mProgressDialog.dismiss();
+
+                                }
+                            });
+
                         }
 
-                        mProgressDialog.dismiss();
                     }
 
                     @Override
