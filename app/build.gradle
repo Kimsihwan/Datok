@@ -44,6 +44,12 @@ dependencies {
 
     //이미지 로딩 최적화 API
     implementation 'com.squareup.picasso:picasso:2.71828'
+
+    //비디오 및 이미지 압축 API
+    implementation 'com.iceteck.silicompressorr:silicompressor:2.1'
+
+    //큰이미지를 작은크기로 압축하는 API
+    implementation 'id.zelory:compressor:2.1.0'
 }
 
 apply plugin: 'com.google.gms.google-services'

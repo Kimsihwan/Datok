@@ -2,6 +2,7 @@ package com.example.test.datok;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -29,9 +30,15 @@ import com.squareup.picasso.PicassoProvider;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import id.zelory.compressor.Compressor;
 
 public class SettingsActivity extends AppCompatActivity {
 
@@ -86,7 +93,9 @@ public class SettingsActivity extends AppCompatActivity {
                 mName.setText(name);
                 mStatus.setText(status);
 
-                Picasso.get().load(image).into(mDisplayImage);
+                if(!image.equals("default")) {
+                    Picasso.get().load(image).placeholder(R.drawable.ic_action_name).into(mDisplayImage);
+                }
             }
 
             @Override
@@ -131,7 +140,7 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    protected void onActivityResult(int requestCode, int resultCode, final Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
         if(requestCode == GALLERY_PICK && resultCode == RESULT_OK) {
@@ -162,9 +171,27 @@ public class SettingsActivity extends AppCompatActivity {
 
                 Uri resultUri = result.getUri();
 
+                File thumb_filePath = new File(resultUri.getPath());
+
                 String current_user_id = mCurrentUser.getUid();
 
+                Bitmap thumb_bitmap = null;
+                try {
+                    thumb_bitmap = new Compressor(this)
+                           .setMaxHeight(200)
+                           .setMaxWidth(200)
+                           .setQuality(75)
+                           .compressToBitmap(thumb_filePath);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    thumb_bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+                    final byte[] thumb_byte = baos.toByteArray();
+
+
                 StorageReference filepath = mImageStorage.child("profile_images").child(current_user_id + ".jpg");
+                final StorageReference thumb_filepath = mImageStorage.child("profile_images").child("thumbs").child(current_user_id + ".jpg");
 
                 filepath.putFile(resultUri).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
                     @Override
@@ -172,23 +199,44 @@ public class SettingsActivity extends AppCompatActivity {
 
                         if(task.isSuccessful()) {
 
-                            String download_url = task.getResult().getDownloadUrl().toString();
+                            final String download_url = task.getResult().getDownloadUrl().toString();
 
-                            mUserDatabase.child("image").setValue(download_url).addOnCompleteListener(new OnCompleteListener<Void>() {
+                            UploadTask uploadTask = thumb_filepath.putBytes(thumb_byte);
+                            uploadTask.addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
                                 @Override
-                                public void onComplete(@NonNull Task<Void> task) {
+                                public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> thumb_task) {
 
-                                    if(task.isSuccessful()) {
+                                    final String thumb_downloadUrl = thumb_task.getResult().getDownloadUrl().toString();
 
-                                        Log.d(TAG, "프로필 사진 업로드 성공");
+                                    if(thumb_task.isSuccessful()) {
 
-                                        mProgressDialog.dismiss();
-                                        Toast.makeText(SettingsActivity.this, "프로필 사진 업로드 성공", Toast.LENGTH_SHORT).show();
+                                        Map update_hashMap = new HashMap();
+                                        update_hashMap.put("image", download_url);
+                                        update_hashMap.put("thumb_image", thumb_downloadUrl);
+
+                                        mUserDatabase.updateChildren(update_hashMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<Void> task) {
+
+                                                if(task.isSuccessful()) {
+                                                    Log.d(TAG, "프로필 사진 업로드 성공");
+
+                                                    mProgressDialog.dismiss();
+                                                    Toast.makeText(SettingsActivity.this, "프로필 사진 업로드 성공", Toast.LENGTH_SHORT).show();
+                                                    mProgressDialog.dismiss();
+                                                }
+                                            }
+                                        });
+                                    } else {
+                                        Log.d(TAG, "프로필 사진 업로드 실패", thumb_task.getException());
+
+                                        Toast.makeText(SettingsActivity.this, "미리보기 사진 업로드 실패", Toast.LENGTH_SHORT).show();
                                     }
+
                                 }
                             });
 
-                            //
+
 
                         } else {
                             Log.d(TAG, "프로필 사진 업로드 실패", task.getException());
