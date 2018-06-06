@@ -1,5 +1,6 @@
 package com.example.test.datok;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.net.Uri;
 import android.support.annotation.NonNull;
@@ -23,6 +24,8 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.squareup.picasso.Picasso;
+import com.squareup.picasso.PicassoProvider;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
@@ -48,8 +51,9 @@ public class SettingsActivity extends AppCompatActivity {
     private static final int GALLERY_PICK = 1;
 
     //Storage Firebase
-
     private StorageReference mImageStorage;
+
+    private ProgressDialog mProgressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,6 +85,8 @@ public class SettingsActivity extends AppCompatActivity {
 
                 mName.setText(name);
                 mStatus.setText(status);
+
+                Picasso.get().load(image).into(mDisplayImage);
             }
 
             @Override
@@ -148,9 +154,17 @@ public class SettingsActivity extends AppCompatActivity {
 
             if (resultCode == RESULT_OK) {
 
+                mProgressDialog = new ProgressDialog(SettingsActivity.this);
+                mProgressDialog.setTitle("프로필 사진 업로드 중");
+                mProgressDialog.setMessage("잠시만 기다려 주세요");
+                mProgressDialog.setCanceledOnTouchOutside(false);
+                mProgressDialog.show();
+
                 Uri resultUri = result.getUri();
 
-                StorageReference filepath = mImageStorage.child("profile_images").child(random() + ".jpg");
+                String current_user_id = mCurrentUser.getUid();
+
+                StorageReference filepath = mImageStorage.child("profile_images").child(current_user_id + ".jpg");
 
                 filepath.putFile(resultUri).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
                     @Override
@@ -158,14 +172,29 @@ public class SettingsActivity extends AppCompatActivity {
 
                         if(task.isSuccessful()) {
 
-                            Log.d(TAG, "프로필 사진 업로드 성공");
+                            String download_url = task.getResult().getDownloadUrl().toString();
 
-                            Toast.makeText(SettingsActivity.this, "프로필 사진 업로드 성공", Toast.LENGTH_SHORT).show();
+                            mUserDatabase.child("image").setValue(download_url).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+
+                                    if(task.isSuccessful()) {
+
+                                        Log.d(TAG, "프로필 사진 업로드 성공");
+
+                                        mProgressDialog.dismiss();
+                                        Toast.makeText(SettingsActivity.this, "프로필 사진 업로드 성공", Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+                            });
+
+                            //
 
                         } else {
                             Log.d(TAG, "프로필 사진 업로드 실패", task.getException());
 
                             Toast.makeText(SettingsActivity.this, "업로드 실패", Toast.LENGTH_SHORT).show();
+                            mProgressDialog.dismiss();
                         }
 
                     }

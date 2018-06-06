@@ -38,6 +38,9 @@ dependencies {
 
     //사진 편집 API
     implementation 'com.theartofdev.edmodo:android-image-cropper:2.7.+'
+
+    //이미지 로딩 최적화 API
+    implementation 'com.squareup.picasso:picasso:2.71828'
 }
 
 apply plugin: 'com.google.gms.google-services'
