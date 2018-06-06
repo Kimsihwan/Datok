@@ -36,6 +36,9 @@ dependencies {
     implementation 'com.google.firebase:firebase-database:11.8.0'
     implementation 'com.google.firebase:firebase-storage:11.8.0'
 
+    //파이어베이스 UI API
+    implementation 'com.firebaseui:firebase-ui-database:1.2.0'
+
     //사진 편집 API
     implementation 'com.theartofdev.edmodo:android-image-cropper:2.7.+'
 
