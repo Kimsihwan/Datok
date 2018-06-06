@@ -1,7 +1,10 @@
 package com.example.test.datok;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -21,9 +24,12 @@ public class SettingsActivity extends AppCompatActivity {
     private FirebaseUser mCurrentUser;
 
     //Android Layout
-        private CircleImageView mDisplayImage;
+    private CircleImageView mDisplayImage;
     private TextView mName;
     private TextView mStatus;
+
+    private Button mStatusBtn;
+    private Button mImageBtn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,6 +39,9 @@ public class SettingsActivity extends AppCompatActivity {
         mDisplayImage = findViewById(R.id.settings_image);
         mName = findViewById(R.id.settings_display_name);
         mStatus = findViewById(R.id.settings_status);
+        mStatusBtn = findViewById(R.id.setting_satus_btn);
+        mImageBtn = findViewById(R.id.setting_image_btn);
+
 
         mCurrentUser = FirebaseAuth.getInstance().getCurrentUser();
 
@@ -54,6 +63,19 @@ public class SettingsActivity extends AppCompatActivity {
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+        mStatusBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String status_value = mStatus.getText().toString();
+
+
+                Intent status_intent = new Intent(SettingsActivity.this, StatusActivity.class);
+                status_intent.putExtra("status_value", status_value);
+                startActivity(status_intent);
 
             }
         });
