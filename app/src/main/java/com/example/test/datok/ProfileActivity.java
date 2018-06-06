@@ -24,12 +24,13 @@ import com.squareup.picasso.Picasso;
 
 import java.text.DateFormat;
 import java.util.Date;
+import java.util.HashMap;
 
 public class ProfileActivity extends AppCompatActivity {
 
     private ImageView mProfileImage;
     private TextView mProfileName, mProfileStatus, mProfileFriendsCount;
-    private Button mProfileSendReqBtn;
+    private Button mProfileSendReqBtn, mDeclineBtn;
 
     private DatabaseReference mUserDatabase;
 
@@ -37,6 +38,7 @@ public class ProfileActivity extends AppCompatActivity {
 
     private DatabaseReference mFriendReqDatabase;
     private DatabaseReference mFriendDatabase;
+    private DatabaseReference mNotificationDatabase;
 
     private FirebaseUser mCurrent_user;
 
@@ -52,6 +54,7 @@ public class ProfileActivity extends AppCompatActivity {
         mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(user_id);
         mFriendReqDatabase = FirebaseDatabase.getInstance().getReference().child("Friend_req");
         mFriendDatabase = FirebaseDatabase.getInstance().getReference().child("Friends");
+        mNotificationDatabase = FirebaseDatabase.getInstance().getReference().child("notifications");
         mCurrent_user = FirebaseAuth.getInstance().getCurrentUser();
 
         mProfileImage = findViewById(R.id.profile_image);
@@ -59,6 +62,7 @@ public class ProfileActivity extends AppCompatActivity {
         mProfileStatus = findViewById(R.id.profile_status);
         mProfileFriendsCount = findViewById(R.id.profile_totalFriends);
         mProfileSendReqBtn = findViewById(R.id.profile_send_req_btn);
+        mDeclineBtn = findViewById(R.id.profile_decline_btn);
 
 
 
@@ -99,9 +103,16 @@ public class ProfileActivity extends AppCompatActivity {
 
                                 mCurrent_state = "req_received";
                                 mProfileSendReqBtn.setText("친구요청 수락");
+
+                                mDeclineBtn.setVisibility(View.VISIBLE);
+                                mDeclineBtn.setEnabled(true);
+
                             } else if(req_type.equals("sent")) {
                                 mCurrent_state = "req_sent";
                                 mProfileSendReqBtn.setText("친구요청 취소");
+
+                                mDeclineBtn.setVisibility(View.INVISIBLE);
+                                mDeclineBtn.setEnabled(false);
                             }
                             mProgressDialog.dismiss();
                         } else {
@@ -114,6 +125,9 @@ public class ProfileActivity extends AppCompatActivity {
 
                                         mCurrent_state = "friends";
                                         mProfileSendReqBtn.setText("친구삭제");
+
+                                        mDeclineBtn.setVisibility(View.INVISIBLE);
+                                        mDeclineBtn.setEnabled(false);
                                     }
 
                                     mProgressDialog.dismiss();
@@ -165,8 +179,21 @@ public class ProfileActivity extends AppCompatActivity {
                                     @Override
                                     public void onSuccess(Void aVoid) {
 
-                                        mCurrent_state = "req_sent";
-                                        mProfileSendReqBtn.setText("친구요청 취소");
+                                        HashMap<String, String> notificationData = new HashMap<>();
+                                        notificationData.put("from", mCurrent_user.getUid());
+                                        notificationData.put("type", "request");
+
+
+                                        mNotificationDatabase.child(user_id).push().setValue(notificationData).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                            @Override
+                                            public void onSuccess(Void aVoid) {
+                                                mCurrent_state = "req_sent";
+                                                mProfileSendReqBtn.setText("친구요청 취소");
+
+                                                mDeclineBtn.setVisibility(View.INVISIBLE);
+                                                mDeclineBtn.setEnabled(false);
+                                            }
+                                        });
 
                                         //Toast.makeText(ProfileActivity.this, "친구요청 성공", Toast.LENGTH_SHORT).show();
                                     }
@@ -197,6 +224,9 @@ public class ProfileActivity extends AppCompatActivity {
                                     mProfileSendReqBtn.setEnabled(true);
                                     mCurrent_state = "not_friends";
                                     mProfileSendReqBtn.setText("친구요청 보내기");
+
+                                    mDeclineBtn.setVisibility(View.INVISIBLE);
+                                    mDeclineBtn.setEnabled(false);
 
                                 }
                             });
@@ -231,6 +261,8 @@ public class ProfileActivity extends AppCompatActivity {
                                                     mProfileSendReqBtn.setEnabled(true);
                                                     mCurrent_state = "friends";
                                                     mProfileSendReqBtn.setText("친구삭제");
+                                                    mDeclineBtn.setVisibility(View.INVISIBLE);
+                                                    mDeclineBtn.setEnabled(false);
 
                                                 }
                                             });
