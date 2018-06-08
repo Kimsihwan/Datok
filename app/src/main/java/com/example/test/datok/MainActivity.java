@@ -39,9 +39,9 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(mToolbar);
         getSupportActionBar().setTitle("DaTok");
 
-
+        if(mAuth.getCurrentUser() != null) {
             mUserRef = FirebaseDatabase.getInstance().getReference().child("Users").child(mAuth.getCurrentUser().getUid());
-
+        }
 
         //Tabs
         mViewPager = findViewById(R.id.main_tapPager);

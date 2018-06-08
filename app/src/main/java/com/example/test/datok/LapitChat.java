@@ -37,6 +37,7 @@ public class LapitChat extends Application{
 
         mAuth = FirebaseAuth.getInstance();
 
+        if (mAuth.getCurrentUser() != null) {
 
             mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(mAuth.getCurrentUser().getUid());
 
@@ -55,4 +56,5 @@ public class LapitChat extends Application{
                 }
             });
         }
+    }
 }
