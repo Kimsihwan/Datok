@@ -12,6 +12,8 @@ import android.view.MenuItem;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -20,6 +22,8 @@ public class MainActivity extends AppCompatActivity {
 
     private ViewPager mViewPager;
     private SectionPagerAdpater mSectionPagerAdpater;
+
+    private DatabaseReference mUserRef;
 
     private TabLayout mTabLayout;
 
@@ -33,6 +37,8 @@ public class MainActivity extends AppCompatActivity {
         mToolbar = findViewById(R.id.main_page_toolbar);
         setSupportActionBar(mToolbar);
         getSupportActionBar().setTitle("DaTok");
+
+        mUserRef = FirebaseDatabase.getInstance().getReference().child("Users").child(mAuth.getCurrentUser().getUid());
 
         //Tabs
         mViewPager = findViewById(R.id.main_tapPager);
@@ -57,7 +63,16 @@ public class MainActivity extends AppCompatActivity {
 
             sendToStart();
 
+        } else {
+            mUserRef.child("online").setValue(true);
         }
+
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        mUserRef.child("online").setValue(false);
 
     }
 

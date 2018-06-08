@@ -25,6 +25,7 @@ import com.squareup.picasso.Picasso;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Map;
 
 public class ProfileActivity extends AppCompatActivity {
 
@@ -40,6 +41,8 @@ public class ProfileActivity extends AppCompatActivity {
     private DatabaseReference mFriendDatabase;
     private DatabaseReference mNotificationDatabase;
 
+    private DatabaseReference mRootRef;
+
     private FirebaseUser mCurrent_user;
 
     private String mCurrent_state;
@@ -50,7 +53,10 @@ public class ProfileActivity extends AppCompatActivity {
         setContentView(R.layout.activity_profile);
 
         final String user_id =  getIntent().getStringExtra("user_id");
+        final String from_user_id =  getIntent().getStringExtra("from_user_id");
 
+
+        mRootRef = FirebaseDatabase.getInstance().getReference();
         mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(user_id);
         mFriendReqDatabase = FirebaseDatabase.getInstance().getReference().child("Friend_req");
         mFriendDatabase = FirebaseDatabase.getInstance().getReference().child("Friends");
@@ -168,45 +174,33 @@ public class ProfileActivity extends AppCompatActivity {
 
                 if(mCurrent_state.equals("not_friends")) {
 
-                    mFriendReqDatabase.child(mCurrent_user.getUid()).child(user_id).child("request_type").setValue("sent").addOnCompleteListener(new OnCompleteListener<Void>() {
+                    DatabaseReference newNotificationref = mRootRef.child("notifications").child(user_id).push();
+                    String newNotificationId = newNotificationref.getKey();
+
+                    HashMap<String, String> notificationData = new HashMap<>();
+                    notificationData.put("from", mCurrent_user.getUid());
+                    notificationData.put("type", "request");
+
+                    Map requestMap = new HashMap();
+                    requestMap.put("Friend_req/" + mCurrent_user.getUid() + "/" + user_id + "/request_type", "sent");
+                    requestMap.put("Friend_req/" + user_id + "/" + mCurrent_user.getUid() + "/request_type", "received");
+                    requestMap.put("notifications/" + user_id + "/" + newNotificationId , notificationData);
+
+
+                    mRootRef.updateChildren(requestMap, new DatabaseReference.CompletionListener() {
                         @Override
-                        public void onComplete(@NonNull Task<Void> task) {
+                        public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
 
-                            if(task.isSuccessful()) {
-
-                                mFriendReqDatabase.child(user_id).child(mCurrent_user.getUid()).child("request_type")
-                                        .setValue("received").addOnSuccessListener(new OnSuccessListener<Void>() {
-                                    @Override
-                                    public void onSuccess(Void aVoid) {
-
-                                        HashMap<String, String> notificationData = new HashMap<>();
-                                        notificationData.put("from", mCurrent_user.getUid());
-                                        notificationData.put("type", "request");
-
-
-                                        mNotificationDatabase.child(user_id).push().setValue(notificationData).addOnSuccessListener(new OnSuccessListener<Void>() {
-                                            @Override
-                                            public void onSuccess(Void aVoid) {
-                                                mCurrent_state = "req_sent";
-                                                mProfileSendReqBtn.setText("친구요청 취소");
-
-                                                mDeclineBtn.setVisibility(View.INVISIBLE);
-                                                mDeclineBtn.setEnabled(false);
-                                            }
-                                        });
-
-                                        //Toast.makeText(ProfileActivity.this, "친구요청 성공", Toast.LENGTH_SHORT).show();
-                                    }
-                                });
-
-
-                            } else {
-
-                                Toast.makeText(ProfileActivity.this, "친구요청 실패", Toast.LENGTH_SHORT).show();
+                            if(databaseError != null) {
+                                Toast.makeText(ProfileActivity.this, "요청을 보내는 중 오류가 발생했습니다.", Toast.LENGTH_SHORT).show();
 
                             }
+
                             mProfileSendReqBtn.setEnabled(true);
 
+
+                            mCurrent_state = "req_sent";
+                            mProfileSendReqBtn.setText("친구요청 취소");
                         }
                     });
                 }
@@ -242,41 +236,66 @@ public class ProfileActivity extends AppCompatActivity {
 
                     final String currentDate = DateFormat.getDateTimeInstance().format(new Date());
 
-                    mFriendDatabase.child(mCurrent_user.getUid()).child(user_id).setValue(currentDate)
-                            .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    Map friendsMap = new HashMap();
+                    friendsMap.put("Friends/" + mCurrent_user.getUid() + "/" + user_id + "/date" , currentDate);
+                    friendsMap.put("Friends/" + user_id + "/" + mCurrent_user.getUid() + "/date", currentDate);
+
+
+                    friendsMap.put("Friend_req/" + mCurrent_user.getUid() + "/" + user_id, null);
+                    friendsMap.put("Friend_req/" + user_id + "/" + mCurrent_user.getUid(), null);
+
+                    mRootRef.updateChildren(friendsMap, new DatabaseReference.CompletionListener() {
                         @Override
-                        public void onSuccess(Void aVoid) {
+                        public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                            if(databaseError == null) {
 
-                            mFriendDatabase.child(user_id).child(mCurrent_user.getUid()).setValue(currentDate)
-                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                @Override
-                                public void onSuccess(Void aVoid) {
-                                    mFriendReqDatabase.child(mCurrent_user.getUid()).child(user_id).removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
-                                        @Override
-                                        public void onSuccess(Void aVoid) {
+                                mProfileSendReqBtn.setEnabled(true);
+                                mCurrent_state = "friends";
+                                mProfileSendReqBtn.setText("친구 삭제");
 
-                                            mFriendReqDatabase.child(user_id).child(mCurrent_user.getUid()).removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
-                                                @Override
-                                                public void onSuccess(Void aVoid) {
-                                                    mProfileSendReqBtn.setEnabled(true);
-                                                    mCurrent_state = "friends";
-                                                    mProfileSendReqBtn.setText("친구삭제");
-                                                    mDeclineBtn.setVisibility(View.INVISIBLE);
-                                                    mDeclineBtn.setEnabled(false);
+                                mDeclineBtn.setVisibility(View.INVISIBLE);
+                                mDeclineBtn.setEnabled(false);
 
-                                                }
-                                            });
+                            } else {
 
+                                String error = databaseError.getMessage();
 
-                                        }
-                                    });
+                                Toast.makeText(ProfileActivity.this, error, Toast.LENGTH_SHORT).show();
 
-
-                                }
-                            });
-
+                            }
                         }
                     });
+                }
+
+                // ------------- 친구삭제 ------------------
+                if(mCurrent_state.equals("friends")) {
+
+                    Map unfriendMap = new HashMap();
+                    unfriendMap.put("Friends/" + mCurrent_user.getUid() + "/" + user_id, null);
+                    unfriendMap.put("Friends/" + user_id + "/" + mCurrent_user.getUid(), null);
+
+                    mRootRef.updateChildren(unfriendMap, new DatabaseReference.CompletionListener() {
+                        @Override
+                        public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                            if(databaseError == null) {
+                                mCurrent_state = "not_friends";
+                                mProfileSendReqBtn.setText("친구요청 보내기");
+
+                                mDeclineBtn.setVisibility(View.INVISIBLE);
+                                mDeclineBtn.setEnabled(false);
+
+                            } else {
+
+                                String error = databaseError.getMessage();
+
+                                Toast.makeText(ProfileActivity.this, error, Toast.LENGTH_SHORT).show();
+
+                            }
+
+                            mProfileSendReqBtn.setEnabled(true);
+                        }
+                    });
+
                 }
 
             }
