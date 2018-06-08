@@ -6,11 +6,18 @@ public class Messages {
     private long time;
     private boolean seen;
 
-    public Messages(String message, String type, long time, boolean seen) {
-        this.message = message;
-        this.type = type;
-        this.time = time;
-        this.seen = seen;
+    private String from;
+
+    public Messages(String from) {
+        this.from = from;
+    }
+
+    public String getFrom() {
+        return from;
+    }
+
+    public void setFrom(String from) {
+        this.from = from;
     }
 
     public String getMessage() {
