@@ -14,9 +14,13 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.iid.FirebaseInstanceId;
 
 
 public class LoginActivity extends AppCompatActivity {
@@ -32,6 +36,9 @@ public class LoginActivity extends AppCompatActivity {
     private ProgressDialog mLoginProgress;
 
     private FirebaseAuth mAuth;
+
+    private DatabaseReference mUserDatabase;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,6 +51,7 @@ public class LoginActivity extends AppCompatActivity {
         getSupportActionBar().setTitle("로그인");
 
         mLoginProgress = new ProgressDialog(this);
+        mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users");
 
 
         mLoginEmail = findViewById(R.id.login_email);
@@ -81,10 +89,23 @@ public class LoginActivity extends AppCompatActivity {
                 if(task.isSuccessful()) {
                     Log.d(TAG, "로그인 성공");
                     mLoginProgress.dismiss();
-                    Intent mainIntent = new Intent(LoginActivity.this, MainActivity.class);
-                    mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK); //기존에 쌓여있던 task(stack)을 없애고 task를 새로 생성한다.
-                    startActivity(mainIntent);
-                    finish();
+
+                    String current_user_id = mAuth.getCurrentUser().getUid();
+                    String deviceToken = FirebaseInstanceId.getInstance().getToken();
+
+
+                    mUserDatabase.child(current_user_id).child("device_token").setValue(deviceToken).addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            Intent mainIntent = new Intent(LoginActivity.this, MainActivity.class);
+                            mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK); //기존에 쌓여있던 task(stack)을 없애고 task를 새로 생성한다.
+                            startActivity(mainIntent);
+                            finish();
+                        }
+                    });
+
+
+
                 } else {
                     Log.d(TAG, "로그인 실패: ", task.getException());
                     mLoginProgress.hide();
