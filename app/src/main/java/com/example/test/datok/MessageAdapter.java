@@ -56,12 +56,12 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         String from_user = c.getFrom();
         if(from_user.equals(current_user_id)) {
 
-            viewHolder.messageText.setBackgroundColor(Color.WHITE);
-            viewHolder.messageText.setTextColor(Color.BLACK);
+            //viewHolder.messageText.setBackgroundColor(Color.WHITE);
+            //viewHolder.messageText.setTextColor(Color.BLACK);
         } else {
 
-            viewHolder.messageText.setBackgroundResource(R.drawable.message_text_background);
-            viewHolder.messageText.setTextColor(Color.WHITE);
+            //viewHolder.messageText.setBackgroundResource(R.drawable.message_text_background);
+            //viewHolder.messageText.setTextColor(Color.WHITE);
         }
         viewHolder.messageText.setText(c.getMessage());
     }
